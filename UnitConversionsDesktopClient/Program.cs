@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace UnitConversionsDesktopClient
@@ -9,11 +10,16 @@ namespace UnitConversionsDesktopClient
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            bool isProduction = false;
+            if (args.Length > 0)
+            {
+                isProduction = args.Contains("+p");
+            }
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new frmUnitConversions());
+            Application.Run(new frmUnitConversions(isProduction));
         }
     }
 }

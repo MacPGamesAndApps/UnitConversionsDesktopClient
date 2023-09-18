@@ -8,15 +8,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using UnitConversionsDesktopClient.Models;
+using UnitConversionsDesktopClient.Utils;
 
 namespace UnitConversionsDesktopClient
 {
     public partial class frmUnitConversions : Form
     {
-        public frmUnitConversions()
+        readonly string _endpointRootUrl = string.Empty;
+
+        public frmUnitConversions(bool isProduction)
         {
             InitializeComponent();
             tsslStatus.Text = "Connecting to Microservice...";
+            _endpointRootUrl = Helpers.GetEndpointRootUrl(isProduction);
         }
 
         private void frmUnitConversions_Load(object sender, EventArgs e)
@@ -41,7 +45,7 @@ namespace UnitConversionsDesktopClient
 
                 using (HttpClient httpClient = new HttpClient())
                 {
-                    HttpResponseMessage httpResponseMessage = await httpClient.GetAsync("http://localhost:60937/api/unitconversions/gettypes");
+                    HttpResponseMessage httpResponseMessage = await httpClient.GetAsync(_endpointRootUrl + "api/unitconversions/gettypes");
                     conversionTypeListJason = await httpResponseMessage.Content.ReadAsStringAsync();
                 }
 
@@ -57,7 +61,7 @@ namespace UnitConversionsDesktopClient
             {
                 btnConvert.Enabled = false;
                 tsslStatus.Text = "Failed to connect to Microservice.";
-                MessageBox.Show("The Microservice is not responding. Please, make sure it is running and working properly.");
+                MessageBox.Show(Constants.Messages.ERROR_MICROSERVICE_NOT_RESPONDING);
             }        
         }
 
@@ -73,7 +77,7 @@ namespace UnitConversionsDesktopClient
                     string postContent = JsonConvert.SerializeObject(conversionData);
                     StringContent stringContent = new StringContent(postContent, Encoding.UTF8, "application/json");
                     stringContent.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-                    HttpResponseMessage httpResponseMessage = await httpClient.PostAsync("http://localhost:60937/api/unitconversions/convert", stringContent);
+                    HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(_endpointRootUrl + "api/unitconversions/convert", stringContent);
                     double responseValue = 0;
                     if (Double.TryParse(await httpResponseMessage.Content.ReadAsStringAsync(), out responseValue))
                     {
@@ -86,7 +90,7 @@ namespace UnitConversionsDesktopClient
             catch (HttpRequestException ex)
             {
                 btnConvert.Enabled = false;
-                MessageBox.Show("The Microservice is not responding. Please, make sure it is running and working properly.");
+                MessageBox.Show(Constants.Messages.ERROR_MICROSERVICE_NOT_RESPONDING);
             }
         }
     }
